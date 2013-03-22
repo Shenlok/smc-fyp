@@ -1,30 +1,38 @@
+from viff.field import GF
+from viff.util import find_prime
 import random
 
-# G - A cyclic group of prime order p
-G = []
 
-# n - number of parties
-n = 100
+class PSA:
+    _hashes = {}
 
-# m - size of message range (message values lie between 0 and (m-1) inclusive)
-m = 20
+    def _H(self, Zp, x):
+        if x not in self._hashes:
+            self._hashes[x] = Zp.random_element()
+        return self._hashes[x]
 
-# t - Threshold, a value in the interval [0, 1] representing the fraction of parties that are corrupt
-t = random.random()
-
-# H : Z - Hash function modelled as a random oracle
-def H():
+    def NoisyEnc(self, param, sk, t, xbar):
+        pass
+        
 
 
-def NoisyEnc(param, ski, t, xbar):
+    # k is the security parameter
+    def setup(self, k, n):
+        p = find_prime(2**k) # Don't believe this is random, but that said i'm not sure that's an issue
+        Zp = GF(p)
+        g = self._find_gen(Zp)
+        sks = [0] * (n + 1)
+        for i in range(1, n + 1):
+            sks[i] = Zp(random.randrange(Zp.modulus))   # Here I replaced Zp.random_element() as this function doesn't seem to exist on FieldElement's
+        sks[0] = -sum(sks[1:])
+
+        return (g, sks)
 
 
-# From Section 5.2 of paper
-def setup():
-    # Trusted dealer chooses a random generator 'g' (in G) and n+1 random secrets s0,s1...sn (Integers up to p)
-    # s0 + s1 + ... sn = 0
-    # Secret keys sk0,sk1..skn
-    # sk[0] is known as the capability
-    # sk[i] is obtained by participant i
-    sk = []
-    s = []
+    def _find_gen(self, Zp):
+        found = False
+        while not found:
+            g = Zp(random.randrange(Zp.modulus))    # As above in sk generation
+            if g.multiplicative_order() == Zp.order() - 1:  # Here neither g.multiplicative_order() nor Zp.order() seem to exist, and i'm not sure how to replace/implement them myself.
+                found = True
+        return found
