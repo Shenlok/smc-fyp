@@ -1,5 +1,6 @@
 from viff.field import GF
 from viff.util import find_prime
+from gmpy import mpz
 import random
 
 
@@ -18,7 +19,7 @@ class PSA:
 
     # k is the security parameter
     def setup(self, k, n):
-        p = find_prime(2**k) # Don't believe this is random, but that said i'm not sure that's an issue
+        q, p = self._find_p(k) 
         Zp = GF(p)
         g = self._find_gen(Zp)
         sks = [0] * (n + 1)
@@ -28,11 +29,15 @@ class PSA:
 
         return (g, sks)
 
+    def _find_p(self, k):
+        q = find_random_prime(k)
+        while not mpz(2*q + 1).is_prime:
+            q = find_random_prime(k)
+        return (q, 2*q + 1)
 
-    def _find_gen(self, Zp):
-        found = False
-        while not found:
-            g = Zp(random.randrange(Zp.modulus))    # As above in sk generation
-            if g.multiplicative_order() == Zp.order() - 1:  # Here neither g.multiplicative_order() nor Zp.order() seem to exist, and i'm not sure how to replace/implement them myself.
-                found = True
-        return found
+
+    def _find_gen(self, Zp, q):
+        g = Zp(random.randrange(Zp.modulus))
+        while g^2 == 1 or g**q == 1:
+            g = Zp(random.randrange(Zp.modulus))
+        return g
