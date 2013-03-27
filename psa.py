@@ -5,26 +5,63 @@ from operator import mul
 import random
 
 
+# TODO: use a CSPRNG. Python's PRNG as we are using here is not suitable
+# for cryptographic purposes
 class PSA:
-    _hashes = {}
+    class Params:
+        def __init__(self, Zp, g, sigma, delta):
+            self.g = g
+            self.Zp = Zp
+            self.sigma = sigma
+            self.delta = delta # message space size (delta is used in the paper)
+            self._hashes = {} # only temporary
+            
+        # This is only temporary/
+        # TODO: use cryptographic hash function
+        def H(self, x):
+            if x not in self._hashes:
+                self._hashes[x] = self.Zp(random.randrange(self.Zp.modulus))
+            return self._hashes[x]
+   
 
-    def _H(self, Zp, x):
-        if x not in self._hashes:
-            self._hashes[x] = Zp.random_element()
-        return self._hashes[x]
+    def NoisyEnc(self, params, sk, t, x):
+        g = params.g
+        H = params.H
+        Zp = params.Zp
+        sigma = params.sigma
 
-    def NoisyEnc(self, param, sk, t, xbar):
-        c = (g^xbar) * self._H(t)^sk
+        r = round(random.gauss(0, sigma))
+        xbar = Zp(x + r)
+        
+        c = (g**xbar) * H(t)**sk
         return c
         
-    def AggrDec(self, param, sk, t, cs):
+    def AggrDec(self, params, sk, t, cs):
+        H = params.H
+        g = params.g
+        delta = params.delta # size of the message space
+        
         cprod = reduce(mul, cs, 1) # Get the product of all the ciphertexts
-        v = (self._H(t)^sk) * cprod
-        return v
+        v = (H(t)**sk) * cprod
+        
+        # TODO: use Pollard's lambda algorithm
+        # For the moment, use 'brute force'
+        h = g
+        for x in range(delta):
+            if v == h:
+                return x
+            h *= g
+        
+        return None
 
 
+    # n is the number of parties
+    # t is the collusion tolerance (in [0, 1]) - might want to use different letter
+    # delta is the size of the message space (i.e. range is {0, ..., delta - 1})
     # k is the security parameter
-    def setup(self, k, n):
+    def setup(self, n, t, delta, k):
+        # TODO: assertions
+        sigma = delta / sqrt(n*(1 - t)) 
         q, p = self._find_p(k) 
         Zp = GF(p)
         self.g = self._find_gen(Zp, q)
@@ -33,7 +70,7 @@ class PSA:
             self.sks[i] = Zp(random.randrange(Zp.modulus))   # Here I replaced Zp.random_element() as this function doesn't seem to exist on FieldElement's
         self.sks[0] = -sum(self.sks[1:])
 
-        return (self.g, self.sks)
+        return (Params(Zp, self.g, sigma, delta), self.sks)
 
     def _find_p(self, k):
         q = find_random_prime(k)
