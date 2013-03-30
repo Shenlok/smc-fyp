@@ -9,12 +9,13 @@ import random
 # for cryptographic purposes
 class PSA:
     class Params:
-        def __init__(self, Zp, g, sigma, delta):
+        def __init__(self, Zp, g, sigma, delta, rand):
             self.g = g
             self.Zp = Zp
             self.sigma = sigma
             self.delta = delta # message space size (delta is used in the paper)
             self._hashes = {} # only temporary
+            self.rand = rand
             
         # This is only temporary/
         # TODO: use cryptographic hash function
@@ -61,16 +62,17 @@ class PSA:
     # k is the security parameter
     def setup(self, n, t, delta, k):
         # TODO: assertions
+        rand = random.SystemRandom()
         sigma = delta / sqrt(n*(1 - t)) 
         q, p = self._find_p(k) 
         Zp = GF(p)
-        self.g = self._find_gen(Zp, q)
+        self.g = self._find_gen(Zp, q, rand)
         self.sks = [0] * (n + 1)
         for i in range(1, n + 1):
-            self.sks[i] = Zp(random.randrange(Zp.modulus))   # Here I replaced Zp.random_element() as this function doesn't seem to exist on FieldElement's
+            self.sks[i] = Zp(rand.randrange(Zp.modulus))   # Here I replaced Zp.random_element() as this function doesn't seem to exist on FieldElement's
         self.sks[0] = -sum(self.sks[1:])
 
-        return (Params(Zp, self.g, sigma, delta), self.sks)
+        return (Params(Zp, self.g, sigma, delta, rand), self.sks)
 
     def _find_p(self, k):
         q = find_random_prime(k)
@@ -79,8 +81,8 @@ class PSA:
         return (q, 2*q + 1)
 
 
-    def _find_gen(self, Zp, q):
-        g = Zp(random.randrange(Zp.modulus))
+    def _find_gen(self, Zp, q, rand):
+        g = Zp(rand.randrange(Zp.modulus))
         while g^2 == 1 or g**q == 1:
-            g = Zp(random.randrange(Zp.modulus))
+            g = Zp(rand.randrange(Zp.modulus))
         return g
