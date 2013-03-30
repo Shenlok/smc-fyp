@@ -1,9 +1,10 @@
 from viff.field import GF
-from viff.util import find_prime
+from viff.util import find_random_prime
 from gmpy import mpz
 from operator import mul
 import random
 import hashlib
+import math
 
 
 class PSA:
@@ -74,7 +75,7 @@ class PSA:
     def setup(self, n, t, delta, k):
         # TODO: assertions
         rand = random.SystemRandom()
-        sigma = delta / sqrt(n*(1 - t)) 
+        sigma = delta / math.sqrt(n*(1 - t)) 
         q, p = self._find_p(k) 
         Zp = GF(p)
         self.g = self._find_gen(Zp, q, rand)
@@ -87,7 +88,7 @@ class PSA:
 
     def _find_p(self, k):
         q = find_random_prime(k)
-        while not mpz(2*q + 1).is_prime:
+        while not mpz(2*q + 1).is_prime():
             q = find_random_prime(k)
         return (q, 2*q + 1)
 
