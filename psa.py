@@ -3,10 +3,9 @@ from viff.util import find_prime
 from gmpy import mpz
 from operator import mul
 import random
+import hashlib
 
 
-# TODO: use a CSPRNG. Python's PRNG as we are using here is not suitable
-# for cryptographic purposes
 class PSA:
     class Params:
         def __init__(self, Zp, g, sigma, delta, rand):
@@ -17,11 +16,22 @@ class PSA:
             self._hashes = {} # only temporary
             self.rand = rand
             
-        # This is only temporary/
-        # TODO: use cryptographic hash function
+        
         def H(self, x):
             if x not in self._hashes:
-                self._hashes[x] = self.Zp(random.randrange(self.Zp.modulus))
+                # we haven't cached our hash for this x, calculate + cache it
+                hs = []
+                h = hashlib.sha256()
+                h.update(str(x))
+                hs.append(h.hexdigest())
+                for x in range(0,3):
+                    h = hashlib.sha256()
+                    h.update(hs[x])
+                    hs.append(h.hexdigest())
+                hx = long("".join(hs), 16)
+                while hx > self.Zp.modulus:
+                    hx = hx >> 1
+                self._hashes[x] = self.Zp(hx)
             return self._hashes[x]
    
 
@@ -30,8 +40,9 @@ class PSA:
         H = params.H
         Zp = params.Zp
         sigma = params.sigma
+        rand = params.rand
 
-        r = round(random.gauss(0, sigma))
+        r = round(rand.gauss(0, sigma))
         xbar = Zp(x + r)
         
         c = (g**xbar) * H(t)**sk
