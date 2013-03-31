@@ -84,7 +84,7 @@ class PSA:
             self.sks[i] = Zp(rand.randrange(Zp.modulus))   # Here I replaced Zp.random_element() as this function doesn't seem to exist on FieldElement's
         self.sks[0] = -sum(self.sks[1:])
 
-        return (Params(Zp, self.g, sigma, delta, rand), self.sks)
+        return (self.Params(Zp, self.g, sigma, delta, rand), self.sks)
 
     def _find_p(self, k):
         q = find_random_prime(k)
