@@ -49,7 +49,7 @@ class PSA:
         print "type of g ,xbar and xbar.unsigned(): {0}, {1}, {2}".format(type(g), type(xbar), type(xbar.unsigned()))
         gxbar = (g**(int(xbar.unsigned())))
 
-        c = gxbar * int(H(t).unsigned())**int(sk.unsigned())
+        c = gxbar * H(t)**int(sk.unsigned())
         return c
         
     def AggrDec(self, params, sk, t, cs):
