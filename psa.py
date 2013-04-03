@@ -46,10 +46,10 @@ class PSA:
         r = round(rand.gauss(0, sigma))
         xbar = Zp(x + r)
         
-        print "type of g and xbar: {0}, {1}".format(type(g), type(xbar))
-        gxbar = (g**xbar)
+        print "type of g ,xbar and xbar.unsigned(): {0}, {1}, {2}".format(type(g), type(xbar), type(xbar.unsigned()))
+        gxbar = (g**(int(xbar.unsigned())))
 
-        c = gxbar * H(t)**sk
+        c = gxbar * int(H(t).unsigned())**int(sk.unsigned())
         return c
         
     def AggrDec(self, params, sk, t, cs):
@@ -75,11 +75,14 @@ class PSA:
     # t is the collusion tolerance (in [0, 1]) - might want to use different letter
     # delta is the size of the message space (i.e. range is {0, ..., delta - 1})
     # k is the security parameter
-    def setup(self, n, t, delta, k):
+    def setup(self, n, t, delta, k, p = 0):
         # TODO: assertions
         rand = random.SystemRandom()
-        sigma = delta / math.sqrt(n*(1 - t)) 
-        q, p = self._find_p(k) 
+        sigma = delta / math.sqrt(n*(1 - t))
+        if p == 0: 
+            q, p = self._find_p(k)
+        else:
+            q = (p - 1) / 2 
         Zp = GF(p)
         self.g = self._find_gen(Zp, q, rand)
         tmpsks = [0] * (n + 1)
