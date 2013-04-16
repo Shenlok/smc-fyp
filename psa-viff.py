@@ -22,12 +22,9 @@ else:
 
 if not os.path.exists("./logs"):
     os.mkdir("logs")
-sys.stdout = open("logs/log-{0}.txt".format(id), "w")
+sys.stdout = open("logs/log-{0}-psa.txt".format(id), "w")
 
 protocol = PSA()
-
-
-
 
 n = len(players)
 
@@ -42,20 +39,27 @@ k = 1024
 rand = random.SystemRandom()
 
 def doPsa(runtime):
+    print "I am player {0}".format(runtime.id)
     start = default_timer()
     params, sks = protocol.setup(n, t, delta, k, p)
     end = default_timer()
     print "Setup took {0}".format(end - start)
 
+    print "Params types: {0}, {1}, {2}, {3}, {4}".format(type(params.delta),type(params.g.value),type(params.rand),type(params.sigma),type(params.Zp))
+
     start = default_timer()
-    protocol.NoisyEnc(params, sks[1], 1, rand.randint(0, delta - 1))
+    c = protocol.NoisyEnc(params, sks[1], 1, rand.randint(0, delta - 1))
     end = default_timer()
 
     print "NoisyEnc took {0}".format(end - start)
-
+    print "NoisyEnc returned type {0}, value {1}".format(type(c),c)
     runtime.shutdown()
+
+def errorHandler(failure):
+    print "Error handler: {0}".format(failure)
 
 theRuntime = create_runtime(id, players, 1) # Not sure if the value 1 is correct here. Can't figure it out from documentation, it might need to be (n * t)
 theRuntime.addCallback(doPsa)
+theRuntime.addErrback(errorHandler)
 
 reactor.run()

@@ -46,7 +46,6 @@ class PSA:
         r = round(rand.gauss(0, sigma))
         xbar = Zp(x + r)
         
-        print "type of g ,xbar and xbar.unsigned(): {0}, {1}, {2}".format(type(g), type(xbar), type(xbar.unsigned()))
         gxbar = (g**(int(xbar.unsigned())))
 
         c = gxbar * H(t)**int(sk.unsigned())
