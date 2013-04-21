@@ -6,6 +6,11 @@ import random
 import hashlib
 import math
 
+def longrange(stop):
+    i = 0
+    while i <= stop:
+        yield i
+        i += 1
 
 class PSA:
     class Params:
@@ -44,11 +49,21 @@ class PSA:
         rand = params.rand
 
         r = round(rand.gauss(0, sigma))
-        xbar = Zp(x + r)
+        xbar = int(Zp(x + r).signed())
         
-        gxbar = (g**(int(xbar.unsigned())))
+        # since pow() throws an exception when called with three arguments and if the exponent is negative
+        # I have tried to counter this by the fact that x^-2 == 1/(x^2), however I'm not sure if this holds here
+        # or if i'm leaving out some modulus arithmetic
+        if xbar < 0:
+            gxbar = 1/(g**(-xbar))
+        else:
+            gxbar = (g**(xbar))
 
-        c = gxbar * H(t)**int(sk.unsigned())
+        sk = int(sk.signed())
+        if sk < 0:
+            c = gxbar * (1/(H(t)**-sk))
+        else:
+            c = gxbar * H(t)**sk
         return c
         
     def AggrDec(self, params, sk, t, cs):
@@ -56,15 +71,23 @@ class PSA:
         g = params.g
         delta = params.delta # size of the message space
         
-        cprod = reduce(mul, cs, 1) # Get the product of all the ciphertexts
-        v = (H(t)**sk) * cprod
+        cprod = reduce(lambda x, y: x * y, cs, 1) # Get the product of all the ciphertexts
+        sk = int(sk.signed())
+
+        # as in NoisyEnc() re: pow with negative exponent
+        if sk < 0:
+            v = (1/(H(t)**-sk)) * cprod
+        else:
+            v = (H(t)**sk) * cprod
+        
         
         # TODO: use Pollard's lambda algorithm
         # For the moment, use 'brute force'
         h = g
-        for x in range(delta):
+        print "Delta: {0}".format(delta)
+        for x in longrange(delta):
             if v == h:
-                return x
+                return x    # This is never getting hit, at least not with a 16bit message space
             h *= g
         
         return None
@@ -89,8 +112,9 @@ class PSA:
         for sk in tmpsks:
             self.sks.append(Zp(sk))
         for i in range(1, n + 1):
-            self.sks[i] = Zp(rand.randrange(Zp.modulus))   # Here I replaced Zp.random_element() as this function doesn't seem to exist on FieldElement's
-        self.sks[0] = -sum(self.sks[1:])
+            self.sks[i] = Zp(rand.randint(0, Zp.modulus))   # Is this correct, or should it be from [-modulus..modulus]
+        self.sks[0] = -reduce(lambda x, y: x + y, self.sks[1:])
+        assert sum(self.sks) == 0
 
         return (self.Params(Zp, self.g, sigma, delta, rand), self.sks)
 
