@@ -5,6 +5,7 @@ from operator import mul
 import random
 import hashlib
 import math
+from pollard import discrete_log_lambda
 
 def longrange(stop):
     i = 0
@@ -49,7 +50,7 @@ class PSA:
         rand = params.rand
 
         r = round(rand.gauss(0, sigma))
-        xbar = int(Zp(x + r).signed())
+        xbar = int(Zp(x + r).unsigned())
         
         # since pow() throws an exception when called with three arguments and if the exponent is negative
         # I have tried to counter this by the fact that x^-2 == 1/(x^2), however I'm not sure if this holds here
@@ -59,7 +60,7 @@ class PSA:
         else:
             gxbar = (g**(xbar))
 
-        sk = int(sk.signed())
+        sk = int(sk.unsigned())
         if sk < 0:
             c = gxbar * (1/(H(t)**-sk))
         else:
@@ -72,7 +73,7 @@ class PSA:
         delta = params.delta # size of the message space
         
         cprod = reduce(lambda x, y: x * y, cs, 1) # Get the product of all the ciphertexts
-        sk = int(sk.signed())
+        sk = int(sk.unsigned())
 
         # as in NoisyEnc() re: pow with negative exponent
         if sk < 0:
@@ -81,16 +82,13 @@ class PSA:
             v = (H(t)**sk) * cprod
         
         
+        x = discrete_log_lambda(v, g, (0, len(cs)*delta))
+
         # TODO: use Pollard's lambda algorithm
         # For the moment, use 'brute force'
-        h = g
-        print "Delta: {0}".format(delta)
-        for x in longrange(delta):
-            if v == h:
-                return x    # This is never getting hit, at least not with a 16bit message space
-            h *= g
         
-        return None
+        
+        return x
 
 
     # n is the number of parties

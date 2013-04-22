@@ -10,6 +10,7 @@ from viff.runtime import create_runtime, Runtime
 from viff.config import load_config
 from timeit import default_timer
 import random
+import matplotlib.pyplot as plt
 
 parser = OptionParser()
 Runtime.add_options(parser)
@@ -22,7 +23,11 @@ else:
 
 if not os.path.exists("./logs"):
     os.mkdir("logs")
-sys.stdout = open("logs/log-{0}-psa.txt".format(id), "w")
+
+if not os.path.exists("./graphs"):
+    os.mkdir("graphs")
+
+#sys.stdout = open("logs/log-{0}-psa.txt".format(id), "w")
 
 protocol = PSA()
 
@@ -32,7 +37,7 @@ p = 8210367885679168766758950738484631605814497398518690371786648569002948704711
 
 t = 0.33
 
-b = 16 # Bit length of our message space
+b = 8 # Bit length of our message space
 
 delta = (2**b) - 1
 
@@ -41,30 +46,42 @@ k = 1024
 rand = random.SystemRandom()
 
 def doPsa(runtime):
+    global b
+    global delta
     print "I am player {0}".format(runtime.id)
-    start = default_timer()
-    params, sks = protocol.setup(n, t, delta, k, p)
-    end = default_timer()
-    print "Setup took {0}".format(end - start)
 
-    cs = []
-    cTimes = []
-    for sk in sks[1:]:
+    while b <= 64:
+        print "Benchmarks for b = {0}".format(b)
         start = default_timer()
-        c = protocol.NoisyEnc(params, sk, 1, rand.randint(0, delta))        
+        params, sks = protocol.setup(n, t, delta, k, p)
         end = default_timer()
-        cs.append(c)
-        cTimes.append(end - start)
+        print "Setup took {0}".format(end - start)
 
-    for time in cTimes:
-        print "NoisyEnc took {0}".format(time)
+        cs = []
+        cTimes = []
+        for sk in sks[1:]:
+            start = default_timer()
+            c = protocol.NoisyEnc(params, sk, 1, rand.randint(0, delta))        
+            end = default_timer()
+            cs.append(c)
+            cTimes.append(end - start)
+
+        for time in cTimes:
+            print "NoisyEnc took {0}".format(time)
     
-    for cVal in cs:
-        print "NoisyEnc returned type {0}, value {1}".format(type(cVal),cVal)
+        for cVal in cs:
+            print "NoisyEnc returned type {0}, value {1}".format(type(cVal),cVal)
 
+        plt.plot(cTimes, cTimes[::-1])
+        plt.savefig("graphs/plot{0}-b{1}.png".format(runtime.id, b))
+        plt.close()
+
+        b *= 2
+        delta = (2**b) - 1
     print "Sk[0] = {0}".format(sks[0].signed()) 
     prod = protocol.AggrDec(params, sks[0], 1, cs)
     print "Aggrdec: {0}".format(prod)
+
     runtime.shutdown()
 
 def errorHandler(failure):
