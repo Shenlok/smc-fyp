@@ -81,7 +81,7 @@ class PSA:
         else:
             v = (H(t)**sk) * cprod
         
-        
+        print "Upper-bound on pollard-lambda: {0}".format(len(cs)*delta)
         x = discrete_log_lambda(v, g, (0, len(cs)*delta))
 
         # TODO: use Pollard's lambda algorithm

@@ -111,9 +111,10 @@ if __name__ == '__main__':
             
             decTimes[b][n] = []
             start = default_timer()
-            prod = protocol.AggrDec(params, sks[0], 1, cs)
             theSum = reduce(lambda x, y: (x + y) % params.Zp.modulus, inputs)
-            print "Sum: {0}, AggrDec calculated: {1}".format(theSum, prod)
+            print "Sum: {0}".format(theSum)
+            prod = protocol.AggrDec(params, sks[0], 1, cs)
+            print "AggrDec calculated: {0}".format(prod)
             end = default_timer()
             decTimes[b][n].append(end - start) 
             n *= 2

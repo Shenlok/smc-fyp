@@ -48,7 +48,7 @@ def discrete_log_lambda(a, base, bounds, operation='*'):
     """
     def hash_function(v):
         #return hashlib.sha256(str(v.value)).hexdigest()
-        return hash(v)
+        return hash(v) + 15
 
     def isqrt(v):
         return int(math.floor(math.sqrt(v)))
