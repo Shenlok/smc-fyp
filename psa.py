@@ -50,7 +50,7 @@ class PSA:
         rand = params.rand
 
         r = round(rand.gauss(0, sigma))
-        xbar = int(Zp(x + r).unsigned())
+        xbar = int(Zp(x + r).signed())
         
         # since pow() throws an exception when called with three arguments and if the exponent is negative
         # I have tried to counter this by the fact that x^-2 == 1/(x^2), however I'm not sure if this holds here
@@ -60,12 +60,12 @@ class PSA:
         else:
             gxbar = (g**(xbar))
 
-        sk = int(sk.unsigned())
+        sk = int(sk.signed())
         if sk < 0:
             c = gxbar * (1/(H(t)**-sk))
         else:
             c = gxbar * H(t)**sk
-        return c
+        return (c, xbar)
         
     def AggrDec(self, params, sk, t, cs):
         H = params.H
@@ -73,7 +73,7 @@ class PSA:
         delta = params.delta # size of the message space
         
         cprod = reduce(lambda x, y: x * y, cs, 1) # Get the product of all the ciphertexts
-        sk = int(sk.unsigned())
+        sk = int(sk.signed())
 
         # as in NoisyEnc() re: pow with negative exponent
         if sk < 0:

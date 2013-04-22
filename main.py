@@ -60,6 +60,8 @@ if __name__ == '__main__':
 
     #sys.stdout = open("logs/log-{0}-psa.txt".format(id), "w")
 
+
+
     protocol = PSA()
 
     id = 1
@@ -92,14 +94,17 @@ if __name__ == '__main__':
             end = default_timer()
             print "Setup took {0}".format(end - start)
 
+            
+
             cs = []
             encTimes[b][n] = []
             inputs = []
             for sk in sks[1:]:
                 start = default_timer()
                 input = rand.randint(0, delta)
-                inputs.append(input)
-                c = protocol.NoisyEnc(params, sk, 1, input)        
+                
+                c, xbar = protocol.NoisyEnc(params, sk, 1, input)
+                inputs.append(xbar)     
                 end = default_timer()
                 cs.append(c)
                 encTimes[b][n].append(end - start)       
@@ -107,7 +112,8 @@ if __name__ == '__main__':
             decTimes[b][n] = []
             start = default_timer()
             prod = protocol.AggrDec(params, sks[0], 1, cs)
-            print "Sum: {0}, AggrDec calculated: {1}".format(sum(inputs), prod)
+            theSum = reduce(lambda x, y: (x + y) % params.Zp.modulus, inputs)
+            print "Sum: {0}, AggrDec calculated: {1}".format(theSum, prod)
             end = default_timer()
             decTimes[b][n].append(end - start) 
             n *= 2
