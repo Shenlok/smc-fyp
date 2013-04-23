@@ -37,9 +37,9 @@ class PSA:
                     h.update(hs[x])
                     hs.append(h.hexdigest())
                 hx = long("".join(hs), 16)
-                while hx > self.Zp.modulus:
+                while hx > self.Zq.modulus:
                     hx = hx >> 1
-                self._hashes[x] = self.Zp(hx)
+                self._hashes[x] = self.g**hx
             return self._hashes[x]
    
     # params is the public parameters, an instance of class Params
