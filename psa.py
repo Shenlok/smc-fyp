@@ -56,21 +56,8 @@ class PSA:
         r = 0
         xbar = Zp(x + r).unsigned()
         
-        
-        if xbar < 0:
-            multiplicative_inverse = pow(g, Zp.modulus - 2)
-            assert (multiplicative_inverse * g) == 1
-            gxbar = multiplicative_inverse**abs(xbar)
-        else:
-            gxbar = (g**(xbar))
-
-        sk = sk.unsigned()
-        if sk < 0:
-            multiplicative_inverse = pow(H(t), Zp.modulus - 2) # attempt modular exponentiation with neg exponent by finding modular multiplicative inverse
-            assert (multiplicative_inverse * H(t))== 1
-            c = gxbar * (multiplicative_inverse**abs(sk))
-        else:
-            c = gxbar * H(t)**sk
+        gxbar = (g**(xbar))
+        c = gxbar * (H(t)**sk)
         return (c, xbar)
         
     def AggrDec(self, params, sk, t, cs):
@@ -79,15 +66,8 @@ class PSA:
         delta = params.delta # size of the message space
         
         cprod = reduce(lambda x, y: x * y, cs, 1) # Get the product of all the ciphertexts
-        sk = sk.unsigned()
 
-        # as in NoisyEnc() re: pow with negative exponent
-        if sk < 0:
-            multiplicative_inverse = pow(H(t), params.Zp.modulus - 2)
-            assert (multiplicative_inverse * H(t))== 1
-            v = (multiplicative_inverse**abs(sk)) * cprod
-        else:
-            v = (H(t)**sk) * cprod
+        v = (H(t)**sk) * cprod
         
         '''print "V = {0}".format(v)
         print "Upper-bound on pollard-lambda: {0}".format(len(cs)*delta)
@@ -122,17 +102,22 @@ class PSA:
             q, p = self._find_p(k)
         else:
             q = (p - 1) / 2 
+        
+        assert delta < q
+        
         Zp = GF(p)
+        Zq = GF(q)
         assert Zp(8).unsigned() == 8
-        self.g = self._find_gen(Zp, q, rand)
+        self.g = self._find_gen(Zp, q, rand)**2
         tmpsks = [0] * (n + 1)
         self.sks = []
         for sk in tmpsks:
-            self.sks.append(Zp(sk))
+            self.sks.append(Zq(sk))
         for i in range(1, n + 1):
-            self.sks[i] = Zp(rand.randint(0, Zp.modulus))   # Is this correct, or should it be from [-modulus..modulus]
+            self.sks[i] = Zq(rand.randint(0, Zq.modulus))
         self.sks[0] = -reduce(lambda x, y: x + y, self.sks[1:])
         assert sum(self.sks).unsigned() == 0
+        self.sks = map(lambda x: x.unsigned(), self.sks)
 
         return (self.Params(Zp, self.g, sigma, delta, rand), self.sks)
 
