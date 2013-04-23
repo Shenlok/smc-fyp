@@ -73,14 +73,14 @@ class PSA:
         
         print "V = {0}".format(v)
         print "Upper-bound on pollard-lambda: {0}".format(Zp(len(cs)*delta))
-        try:
+        '''try:
             assert type(v) == type(g)
-            x = discrete_log_lambda(v, g, (Zp(0), Zp(len(cs)*delta)))
+            x = discrete_log_lambda(v, g, (0, len(cs)*delta))
         except ValueError:
             print "Pollard-lambda failed to find log with standard operator, trying alternative"
-            x = discrete_log_lambda(v, g, (Zp(0), Zp(len(cs)*delta)), '+')
-        return x
-        '''
+            x = discrete_log_lambda(v, g, (0, len(cs)*delta), '+')
+        return x'''
+        
         # TODO: use Pollard's lambda algorithm
         # For the moment, use 'brute force'
         h = g
@@ -89,7 +89,7 @@ class PSA:
                 return x + 1
             h *= g
         
-        return None'''
+        return None
         
 
     # n is the number of parties.

@@ -70,14 +70,15 @@ if __name__ == '__main__':
     n = 4
 
     #p = 8210367885679168766758950738484631605814497398518690371786648569002948704711364117378465988124313755366044696642284768924819556022676696987591359662994541674288334772534600049590413961300804080139388895971566128327100549100994100446988248682535394236326347178554088960814072469643139825048533231637837365239
-    p = 83
+    #p = 83
+    p = 0
     t = 0.33
 
     b = 8 # Bit length of our message space
 
-    #delta = (2**b) - 1
-    delta = 5
-    k = 1024
+    delta = (2**b) - 1
+    #delta = 5
+    k = 256
 
     rand = random.SystemRandom()
 
@@ -99,7 +100,7 @@ if __name__ == '__main__':
             '''elems = []
             for x in xrange(6):
                 elems.append(rand.randint(0, p-1))'''
-            elems = [36, 38, 40, 37, 13]
+            '''elems = sks
             v = sum(elems) % params.Zq.modulus
             assert v == 0
 
@@ -108,9 +109,10 @@ if __name__ == '__main__':
             assert type(w) == type(Zp(0))
             assert type(params.g) == type(Zp(0))
             assert type(w) == type(params.g)
-            log = pollard.discrete_log_lambda(w, params.g, (Zp(0), Zp(params.Zq.modulus-1)))
+            #log = pollard.discrete_log_lambda(w, params.g, (0, params.Zq.modulus-1))
+            log = pollard.discrete_log_rho(w, params.g, params.Zp.modulus)
             print "Given elems = {0}, v = {1}, w = {2}, g = {3} and log = {4}".format(elems, v, w, params.g, log)
-            assert log == v
+            assert log == v'''
 
 
             
@@ -141,8 +143,8 @@ if __name__ == '__main__':
             decTimes[b][n].append(end - start) 
             n *= 2
         b *= 2
-        #delta = (2**b) - 1
-        delta = 5
+        delta = (2**b) - 1
+        #delta = 5
 
     for b in encTimes.keys():
         fig = plt.figure()
