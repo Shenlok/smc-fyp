@@ -64,6 +64,7 @@ class PSA:
     def AggrDec(self, params, sk, t, cs):
         H = params.H
         g = params.g
+        Zp = params.Zp
         delta = params.delta # size of the message space
         
         cprod = reduce(lambda x, y: x * y, cs, 1) # Get the product of all the ciphertexts
@@ -71,12 +72,13 @@ class PSA:
         v = (H(t)**sk) * cprod
         
         print "V = {0}".format(v)
-        print "Upper-bound on pollard-lambda: {0}".format(len(cs)*delta)
+        print "Upper-bound on pollard-lambda: {0}".format(Zp(len(cs)*delta))
         try:
-            x = discrete_log_lambda(v, g, (0, len(cs)*delta))
+            assert type(v) == type(g)
+            x = discrete_log_lambda(v, g, (Zp(0), Zp(len(cs)*delta)))
         except ValueError:
             print "Pollard-lambda failed to find log with standard operator, trying alternative"
-            x = discrete_log_lambda(v, g, (0, len(cs)*delta), '+')
+            x = discrete_log_lambda(v, g, (Zp(0), Zp(len(cs)*delta)), '+')
         return x
         '''
         # TODO: use Pollard's lambda algorithm
@@ -105,6 +107,7 @@ class PSA:
             q = (p - 1) / 2 
         
         assert delta < q
+        assert n*delta < q
         
         Zp = GF(p)
         Zq = GF(q)

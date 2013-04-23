@@ -99,13 +99,18 @@ if __name__ == '__main__':
             '''elems = []
             for x in xrange(6):
                 elems.append(rand.randint(0, p-1))'''
-            '''elems = sks
+            elems = [36, 38, 40, 37, 13]
             v = sum(elems) % params.Zq.modulus
-            w = reduce(lambda x, y: x*y, map(lambda x: params.g**x, elems))
+            assert v == 0
 
-            log = pollard.discrete_log_lambda(w, params.g, (0, p))
+            w = reduce(lambda x, y: x*y, map(lambda x: params.g**x, elems))
+            Zp = params.Zp
+            assert type(w) == type(Zp(0))
+            assert type(params.g) == type(Zp(0))
+            assert type(w) == type(params.g)
+            log = pollard.discrete_log_lambda(w, params.g, (Zp(0), Zp(params.Zq.modulus-1)))
             print "Given elems = {0}, v = {1}, w = {2}, g = {3} and log = {4}".format(elems, v, w, params.g, log)
-            assert log == v'''
+            assert log == v
 
 
             

@@ -52,7 +52,7 @@ def discrete_log_lambda(a, base, bounds, operation='*'):
         return hash(v*v)
 
     def isqrt(v):
-        return int(math.floor(math.sqrt(v)))
+        return int(math.floor(math.sqrt(v.value)))
 
     from operator import mul, add, pow
 
@@ -83,7 +83,7 @@ def discrete_log_lambda(a, base, bounds, operation='*'):
             M[k] = (r , power(base,r))
             k += 1
         #first random walk
-        H = power(base,ub)
+        H = power(base,ub.value)
         c = ub
         for i in xrange(N):
             if mut: H.set_immutable()
