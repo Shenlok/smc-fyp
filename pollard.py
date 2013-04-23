@@ -47,17 +47,21 @@ def discrete_log_lambda(a, base, bounds, operation='*'):
 
     """
     def hash_function(v):
-        #return hashlib.sha256(str(v.value)).hexdigest()
-        return hash(v) + 15
+        #return long(hashlib.sha256(str(v.value)).hexdigest(), 16)
+        #return hash(v) + 15
+        return hash(v*v)
 
     def isqrt(v):
         return int(math.floor(math.sqrt(v)))
 
     from operator import mul, add, pow
 
-    
-    mult=mul 
-    power=pow 
+    if operation == '*':
+        mult = mul
+        power = pow
+    else:
+        mult=add 
+        power=mul 
    
 
     lb,ub = bounds
