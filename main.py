@@ -99,13 +99,13 @@ if __name__ == '__main__':
             '''elems = []
             for x in xrange(6):
                 elems.append(rand.randint(0, p-1))'''
-            elems = map(lambda x: x.unsigned(), sks)
-            v = sum(elems) % p
+            '''elems = sks
+            v = sum(elems) % params.Zq.modulus
             w = reduce(lambda x, y: x*y, map(lambda x: params.g**x, elems))
 
             log = pollard.discrete_log_lambda(w, params.g, (0, p))
             print "Given elems = {0}, v = {1}, w = {2}, g = {3} and log = {4}".format(elems, v, w, params.g, log)
-            assert log == v
+            assert log == v'''
 
 
             

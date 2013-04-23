@@ -15,13 +15,14 @@ def longrange(stop):
 
 class PSA:
     class Params:
-        def __init__(self, Zp, g, sigma, delta, rand):
+        def __init__(self, Zp, g, sigma, delta, rand, Zq):
             self.g = g
             self.Zp = Zp
             self.sigma = sigma
             self.delta = delta # message space size (delta is used in the paper)
             self._hashes = {} # only temporary
             self.rand = rand
+            self.Zq = Zq
             
         
         def H(self, x):
@@ -119,7 +120,7 @@ class PSA:
         assert sum(self.sks).unsigned() == 0
         self.sks = map(lambda x: x.unsigned(), self.sks)
 
-        return (self.Params(Zp, self.g, sigma, delta, rand), self.sks)
+        return (self.Params(Zp, self.g, sigma, delta, rand, Zq), self.sks)
 
     def _find_p(self, k):
         q = find_random_prime(k)
