@@ -70,15 +70,15 @@ class PSA:
 
         v = (H(t)**sk) * cprod
         
-        '''print "V = {0}".format(v)
+        print "V = {0}".format(v)
         print "Upper-bound on pollard-lambda: {0}".format(len(cs)*delta)
         try:
             x = discrete_log_lambda(v, g, (0, len(cs)*delta))
         except ValueError:
             print "Pollard-lambda failed to find log with standard operator, trying alternative"
             x = discrete_log_lambda(v, g, (0, len(cs)*delta), '+')
+        return x
         '''
-
         # TODO: use Pollard's lambda algorithm
         # For the moment, use 'brute force'
         h = g
@@ -87,8 +87,8 @@ class PSA:
                 return x + 1
             h *= g
         
-        return None
-
+        return None'''
+        
 
     # n is the number of parties.
     # t is the collusion tolerance (in [0, 1]).
